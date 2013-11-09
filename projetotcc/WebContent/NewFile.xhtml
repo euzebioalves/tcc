@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"   
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      >
+ 
+    <h:body>
+ 
+    	 <h:form id="form2">
+    	 <h:outputText id="teste3" value="#{cadastro.teste.polygon}"></h:outputText>
+	    <h:inputHidden id="hiddenBu" value="#{cadastro.teste.observacoes}"/>	
+		<p:dataTable id="agricul" value="#{cadastro.listaAgricultura}"
+			var="agr" width="100%" emptyMessage="Sem registros">
+			<p:column sortBy="#{agr.idAgricultura }">
+				<f:facet name="header">
+					<h:outputText value="ID"></h:outputText>
+				</f:facet>
+				<h:outputText value="#{agr.idAgricultura }"></h:outputText>
+			</p:column>			
+			<p:column sortBy="#{agr.observacoes}">
+				<f:facet name="header">
+					<h:outputText value="Observações"></h:outputText>
+				</f:facet>
+				<h:outputText id="teste3" value="#{agr.observacoes }"></h:outputText>
+			</p:column>
+			<p:column sortBy="#{agr.tipo_agricultura.descricao}">
+				<f:facet name="header">
+					<h:outputText value="Tipo Agricultura"></h:outputText>
+				</f:facet>
+				<h:outputText id="teste" value="#{agr.tipo_agricultura.descricao}"></h:outputText>
+			</p:column>
+			 <p:column style="text-align: center">
+                    <f:facet name="header">
+                        <h:outputText value="Acao"></h:outputText>
+                    </f:facet>
+                    
+                    <p:commandButton id="btnExibeDetalhes" update=":form2"
+                                     image="ui-icon ui-icon-info"
+                                     title="Detalhes" value="Detalhes" > 
+                        <f:setPropertyActionListener target="#{cadastro.teste}" value="#{agr}"/>
+                    </p:commandButton>
+                  
+                 
+                </p:column>
+		</p:dataTable>		
+		</h:form>		
+ 
+
+ 
+    </h:body>
+</html>

@@ -1,0 +1,185 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" xmlns:m="http://www.ol4jsf.org">
+
+<ui:decorate template="/template/template_pesquisa.xhtml">
+	<ui:define name="corpo">
+	<p:toolbar>
+			<p:toolbarGroup align="left">
+				<p:separator />
+				<p:clock pattern="dd/MM/yyyy HH:mm:ss" mode="client" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Agricultura >" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Visualizar Propriedade" />
+			</p:toolbarGroup>
+		</p:toolbar>
+		<h:form id="f1">
+			<m:map id="mp" width="100%" height="668px" jsVariable="map"
+				options="{controls: [], numZoomLevels: 20, maxResolution: 0.0002734375, maxExtent: bounds}">
+				<m:googleLayer name="Google Hybrid"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.HYBRID}" />
+				<m:googleLayer name="Google Physical"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.TERRAIN }" />
+				<m:googleLayer name="Google Streets"
+					options="{'sphericalMercator': false,  type: google.maps.MapTypeId.ROADMAP}" />
+
+				<m:googleLayer name="Google Satellite"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.SATELLITE }" />
+				<m:inputVectorLayer name="Edição" jsVariable="vlayer"
+					value="#{cadastro.polygon}" options="{visibility: true}" />
+
+				
+
+				<m:inputVectorLayer name="Agricultura" jsVariable="vlayer"
+					value="#{cadastro.wkts}" options="{visibility: true, styleMap: new OpenLayers.StyleMap({fillColor: '#54FF9F', fillOpacity: 0.4, strokeColor: '#54FF9F'})}" />
+
+				<m:inputVectorLayer name="Propriedade" jsVariable="vlayerP"
+					value="#{cadastro.wktsPropriedade}" options="{visibility: true, styleMap: new OpenLayers.StyleMap({strokeWidth: 4, fillColor: '#FFA500', fillOpacity: 0.0, strokeColor: '#ffff00', graphicZIndex: 10})}" />
+
+					
+					
+					<m:featureInfoPopup
+						url="#{facesContext.externalContext.requestContextPath}/OL4JSFProxy/wms">
+					</m:featureInfoPopup>
+				<m:navigationControl />
+				<m:panZoomBarControl />
+				<m:layerSwitcherControl options="{ascending:false}" />
+				<m:scaleLineControl />
+				<m:mousePositionControl />
+				<m:overviewMapControl />
+				<m:permalinkControl />
+		
+				<m:script>  
+			
+			        var bounds = new OpenLayers.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34);                 
+        var drawControls, selectControl, selectedFeature;
+                    
+                    selectControl = new OpenLayers.Control.SelectFeature(vlayer,
+                    {
+                        onSelect: onFeatureSelect, onUnselect: onFeatureUnselect});
+                        drawControls = {select: selectControl 
+                    };
+                    
+                    for(var key in drawControls) 
+                    {
+                        map.addControl(drawControls[key]);
+                    }
+                    
+                    map.setCenter(new OpenLayers.LonLat(-49.301147460938, -16.678293098289),9);
+
+                    var j;                        
+                    j = document.getElementById('form2:agricul:0:hiddenButton2').value;
+
+                    function zoomMap() 
+                    {
+                        map.setCenter(geom.getBounds().getCenterLonLat(),12);
+                        alert(j);
+                    }
+
+                    for(key in drawControls) 
+                    {
+                        var control = drawControls[key];
+                        control.activate();
+                    }
+
+                    function onPopupClose(evt) 
+                    {
+                        selectControl.unselect(selectedFeature);
+                    }
+                    
+                    function onFeatureSelect(feature) 
+                    {
+                        var geom = OpenLayers.Geometry.fromWKT(
+                        "POLYGON((-30.443115234375 12.730407714844,-10.579833984375 19.410095214844,-16.556396484375 0.42572021484375,-30.443115234375 12.730407714844))"
+                    );
+
+                    selectedFeature = feature;
+                    var topleft = feature.geometry.getVertices()[0];
+                    popup = new OpenLayers.Popup.FramedCloud("chicken", 
+                    feature.geometry.getBounds().getCenterLonLat(),
+                    new OpenLayers.Size(100, 100),
+                    "<div>Feature: " + feature.id +"<br/>Area: "+" "+geom.getBounds().getCenterLonLat()+" " +feature.geometry.getBounds().getCenterLonLat() +" "+ feature.geometry+" "+feature.geometry.getArea()+"Km"+j +"<sup>2</sup></div>",
+                    null, true, onPopupClose);
+                    feature.popup = popup;
+                    
+                   
+                    popup.setSize(new OpenLayers.Size(300, 200));
+                    
+                    }
+                    function onFeatureUnselect(feature) 
+                    {
+                        map.removePopup(feature.popup);
+                        feature.popup.destroy();
+                        feature.popup = null;
+                    }
+
+                    for (var i=map.layers.length-1; i>=0; --i) 
+                    {
+                        map.layers[i].animationEnabled = true;                       
+                    }
+                    vlayer.setOpacity(0.6);
+                    
+                    map.setCenter(new OpenLayers.LonLat(-49.260743, -16.676978).transform(new OpenLayers.Projection("EPSG:90013"),map.getProjectionObject()), 5);                    
+                </m:script>
+			</m:map>
+
+		</h:form>
+	</ui:define>
+	<ui:define name="corpoBottom">
+		
+	  <h:form id="form2">
+	   <h:inputHidden id="pol" value="#{propriedadeControl.polygonSelecionado}" />
+    	
+		<p:dataTable id="agricul" value="#{propriedadeControl.listaPropriedade}"
+			var="prop" width="100%" emptyMessage="Sem registros">
+			<p:column sortBy="#{prop.idPropriedade }">
+				<f:facet name="header">
+					<h:outputText value="ID"></h:outputText>
+				</f:facet>
+				<h:outputText value="#{prop.idPropriedade }"></h:outputText>
+			</p:column>			
+			<p:column sortBy="#{prop.nome}">
+				<f:facet name="header">
+					<h:outputText value="Nome da Propriedade"></h:outputText>
+				</f:facet>
+				<h:outputText id="teste3" value="#{prop.nome }"></h:outputText>
+			</p:column>
+			<p:column sortBy="#{prop.proprietario.nome}">
+				<f:facet name="header">
+					<h:outputText value="Nome do Proprietario"></h:outputText>
+				</f:facet>
+				<h:outputText id="teste" value="#{prop.proprietario.nome}"></h:outputText>
+			</p:column>
+			 <p:column style="text-align: center">
+                    <f:facet name="header">
+                        <h:outputText value="Acao"></h:outputText>
+                    </f:facet>
+                    
+                    <p:commandButton id="btnExibeDetalhes" update=":form2"
+                                     image="ui-icon ui-icon-info"
+                                     title="Ir" value="Ir" oncomplete="efetuaAlgumaAcao()"> 
+                        <f:setPropertyActionListener target="#{propriedadeControl.polygonSelecionado}" value="#{prop.polygon}"/>
+                    </p:commandButton>
+                  
+                 
+                </p:column>
+		</p:dataTable>		
+		</h:form>		
+	</ui:define>
+</ui:decorate>
+<SCRIPT type="text/javascript">
+function efetuaAlgumaAcao() {               
+    
+    
+    var o = document.getElementById('form2:pol').value;
+   // alert(o);
+    var geom = OpenLayers.Geometry.fromWKT(o);        
+           
+    map.zoomToExtent(geom.getBounds());
+    
+}
+</SCRIPT>
+</html>

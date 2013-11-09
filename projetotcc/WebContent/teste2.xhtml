@@ -1,0 +1,223 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" xmlns:m="http://www.ol4jsf.org">
+
+<ui:decorate template="/template/template_pesquisa.xhtml">
+	<ui:define name="corpo">
+		<h:form id="f1">
+			<m:map id="mp" width="100%" height="668px" jsVariable="map"
+				options="{controls: [], numZoomLevels: 20, maxResolution: 0.0002734375, maxExtent: bounds}">
+				<m:googleLayer name="Google Hybrid"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.HYBRID}" />
+				<m:googleLayer name="Google Physical"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.TERRAIN }" />
+				<m:googleLayer name="Google Streets"
+					options="{'sphericalMercator': false,  type: google.maps.MapTypeId.ROADMAP}" />
+
+				<m:googleLayer name="Google Satellite"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.SATELLITE }" />
+				<m:inputVectorLayer name="Edição" jsVariable="point"
+					value="#{cadastro.polygon}" options="{visibility: true}" />
+
+				<m:wmsLayer name="Propriedades"
+					url="#{facesContext.externalContext.requestContextPath}/OL4JSFProxy/wms"
+					params="{layers: 'cite:propriedade', transparent:true}"
+					options="{visibility: true}" jsVariable="cr" />
+
+				<m:wmsLayer name="Agricultura"
+					url="#{facesContext.externalContext.requestContextPath}/OL4JSFProxy/wms"
+					params="{layers: 'cite:agricultura', transparent:true}"
+					options="{visibility: true}" jsVariable="p" />
+					
+					
+
+				<m:navigationControl />
+				<m:panZoomBarControl />
+				<m:layerSwitcherControl options="{ascending:false}" />
+				<m:scaleLineControl />
+				<m:mousePositionControl />
+				<m:overviewMapControl />
+				<m:permalinkControl />
+
+				<m:script>  
+			    OpenLayers.Control.Click = OpenLayers.Class(OpenLayers.Control, {               
+                defaultHandlerOptions: {
+                    'single': true,
+                    'double': false,
+                    'pixelTolerance': 0,
+                    'stopSingle': false,
+                    'stopDouble': false	
+                },
+
+                initialize: function(options) {
+                    this.handlerOptions = OpenLayers.Util.extend(
+                        {}, this.defaultHandlerOptions
+                    );
+                    OpenLayers.Control.prototype.initialize.apply(
+                        this, arguments
+                    ); 
+                    this.handler = new OpenLayers.Handler.Click(
+                        this, {
+                            'click': this.trigger
+                        }, this.handlerOptions
+                    );
+                }, 
+
+                trigger: function(e) {
+                    var lonlat = map.getLonLatFromPixel(e.xy);
+
+                    document.getElementById("form2:pesq").value = "POINT("+lonlat.lon+" "+lonlat.lat+")";
+                  
+                    document.getElementById("form2:vc").click(); 
+                     
+                }
+
+            });
+            
+              var click = new OpenLayers.Control.Click();
+                map.addControl(click);
+                click.activate();
+            
+            
+            
+            
+            
+			        var bounds = new OpenLayers.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34);                 
+       
+                    map.setCenter(new OpenLayers.LonLat(-49.260743, -16.676978).transform(new OpenLayers.Projection("EPSG:90013"),map.getProjectionObject()), 5);                    
+                	
+                	 
+                
+                </m:script>
+			</m:map>
+
+
+		</h:form>
+		<p:dialog widgetVar="dlg3" id="mpid" header="Dados" showEffect="clip">
+			<h:panelGrid id="grid" columns="2" style="margin-bottom:10px">
+				<h:form id="form7">
+					<table border="1">
+						<tr>
+							<td><h:outputText id="teste48" value="Tipo de Agricultura: "
+									style="font-weight:bold;">
+								</h:outputText></td>
+							<td><h:outputText id="teste46"
+									value="#{cadastro.agriculturaPesquisa.tipo_agricultura.descricao}"></h:outputText>
+							</td>
+						</tr>
+						
+						<tr>
+							<td><h:outputText id="teste47" value="Obeservações: "
+									style="font-weight:bold;"></h:outputText>
+									<h:inputHidden id="pesq2" value="#{cadastro.agriculturaPesquisa.observacoes}" />
+									</td>
+							<td><h:outputText id="teste45"
+									value="#{cadastro.agriculturaPesquisa.observacoes}"></h:outputText>
+							</td>
+						</tr>
+						<tr>
+							<td><h:outputText id="teste49" value="Área: "
+									style="font-weight:bold;"></h:outputText></td>
+							<td><h:outputText id="teste50"
+									value="#{cadastro.areaSelecionada}"></h:outputText>
+							</td>
+						</tr>
+					</table>
+					<h:outputText id="teste51"
+									value="#{cadastro.msg}"></h:outputText>
+				</h:form>
+			</h:panelGrid>
+		</p:dialog>
+			<p:dialog id="modalDialog" header="Aviso" widgetVar="dlg7" dynamic="true"> 
+			<h:panelGrid> 
+    <h:outputText value="Selecione uma Agricultura!!!" />
+    <p:commandButton styleClass="ui-confirmdialog-yes"
+								title="Cancelar" value="OK"
+								 onclick="dlg7.hide();"/> 
+					</h:panelGrid>
+</p:dialog> 
+	</ui:define>
+	<ui:define name="corpoBottom">
+
+		<h:form id="form2">
+			<p:commandButton style="display:none;" id="vc"
+				update=":form2  :form7" title="Cancelar" value="Cancelar"
+				oncomplete="verifica();" icon="ui-icon-cancel"
+				action="#{cadastro.Consultar}">
+			</p:commandButton>
+
+			<h:inputHidden id="pesq" value="#{cadastro.pesquisa}" />
+			<h:inputHidden id="pol" value="#{cadastro.polygonSelecionado}" />
+
+			<p:dataTable id="agricul" value="#{cadastro.listaAgricultura}"
+				var="agr" width="100%" emptyMessage="Sem registros">
+				<p:column sortBy="#{agr.idAgricultura }">
+					<f:facet name="header">
+						<h:outputText value="ID"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{agr.idAgricultura }"></h:outputText>
+				</p:column>
+				<p:column sortBy="#{agr.observacoes}">
+					<f:facet name="header">
+						<h:outputText value="Observações"></h:outputText>
+					</f:facet>
+					<h:outputText id="teste3" value="#{agr.observacoes }"></h:outputText>
+				</p:column>
+				<p:column sortBy="#{agr.tipo_agricultura.descricao}">
+					<f:facet name="header">
+						<h:outputText value="Tipo Agricultura"></h:outputText>
+					</f:facet>
+					<h:outputText id="teste" value="#{agr.tipo_agricultura.descricao}"></h:outputText>
+				</p:column>
+				<p:column style="text-align: center">
+					<f:facet name="header">
+						<h:outputText value="Acao"></h:outputText>
+					</f:facet>
+
+					<p:commandButton id="btnExibeDetalhes" update=":form2"
+						image="ui-icon-circle-arrow-n" title="Ir" value="Ir"
+						oncomplete="efetuaAlgumaAcao()">
+						<f:setPropertyActionListener
+							target="#{cadastro.polygonSelecionado}" value="#{agr.polygon}" />
+					</p:commandButton>
+
+				</p:column>
+			</p:dataTable>
+		
+		</h:form>
+
+	</ui:define>
+</ui:decorate>
+<SCRIPT type="text/javascript">
+	function efetuaAlgumaAcao() {
+
+		var o = document.getElementById('form2:pol').value;
+		//alert(o);
+		var geom = OpenLayers.Geometry.fromWKT(o);
+
+		map.zoomToExtent(geom.getBounds());
+
+	}
+	function selected(evt) {
+		dist = document.getElementById('hidden12');
+		dist.value = evt.feature.geometry;
+
+		alert(dist.value);
+	}
+	function i() {
+		alert('');
+	}
+	function verifica(){
+		var id = document.getElementById('form7:pesq2').value;
+	     if(id != "")
+	    	 {
+	    	 dlg3.show();
+	    	 }else{
+	    		 dlg7.show();
+	    	 }
+		
+	}
+</SCRIPT>
+</html>

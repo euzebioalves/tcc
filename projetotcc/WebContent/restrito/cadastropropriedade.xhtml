@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" 
+	xmlns:m="http://www.ol4jsf.org">
+<ui:decorate template="/template/template_cadastro.xhtml">
+
+	<ui:define name="corpo">
+		<p:toolbar>
+			<p:toolbarGroup align="left">
+				<p:separator />
+				<p:clock pattern="dd/MM/yyyy HH:mm:ss" mode="client" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Agricultura >" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Cadastro de Propriedade" />
+			</p:toolbarGroup>
+		</p:toolbar>
+			<h:form id="f1">
+		<m:map id="mp" width="100%" height="668px" jsVariable="map"
+			options="{controls: [], numZoomLevels: 20, maxResolution: 0.0002734375, maxExtent: bounds}">
+			<m:googleLayer name="Google Hybrid"
+				options="{'sphericalMercator': false, type: google.maps.MapTypeId.HYBRID}" />
+			<m:googleLayer name="Google Physical"
+				options="{'sphericalMercator': false, type: google.maps.MapTypeId.TERRAIN }" />
+			<m:googleLayer name="Google Streets"
+				options="{'sphericalMercator': false,  type: google.maps.MapTypeId.ROADMAP}" />
+
+			<m:googleLayer name="Google Satellite"
+				options="{'sphericalMercator': false, type: google.maps.MapTypeId.SATELLITE }" />
+			<m:inputVectorLayer name="Edição" jsVariable="vlayer"
+				value="#{propriedadeControl.polygon}"
+				options="{visibility: true}"  />			
+
+			<m:wmsLayer name="Propriedades"
+				url="#{facesContext.externalContext.requestContextPath}/OL4JSFProxy/wms"
+				params="{layers: 'cite:propriedade', transparent:true}"
+				options="{visibility: true}" jsVariable="cr" />
+			<m:navigationControl />
+			<m:panZoomBarControl />
+			<m:layerSwitcherControl options="{ascending:false}" />
+			<m:scaleLineControl />
+			<m:mousePositionControl />
+			<m:overviewMapControl />
+			<m:permalinkControl />
+			<m:editingToolbarControl layer="vlayer"
+				options="{handlerOptions: {holeModifier: 'altKey'}}">
+			</m:editingToolbarControl>
+			<m:script> 			
+			        var bounds = new OpenLayers.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34);                 
+                    var i;
+                    i = 1;
+                    function updateOutput(event) 
+                    {
+                    window.setTimeout(function() 
+                    {
+                    if(event.feature.id != "OpenLayers_Feature_Vector_51")
+                    {
+                    if(i == 1)
+                    {
+                    abrir();
+                    i = 2;
+                    }
+                    }
+                    output.innerHTML = event.type + " " + event.feature.id;
+                    }, 100);
+                    }
+
+                    for(var key in map.layers) 
+                    {
+                    map.layers[key].events.on(
+                    {
+                    sketchmodified: updateOutput,
+                    sketchcomplete: updateOutput
+                    });
+                    } 
+
+                    function toggleControl(element) 
+                    {
+                    draw.activate();
+                    }
+
+                    for (var i=map.layers.length-1; i>=0; --i) 
+                    {
+                    map.layers[i].animationEnabled = true;                       
+                    }         
+                    
+                    map.setCenter(new OpenLayers.LonLat(-49.260743, -16.676978).transform(new OpenLayers.Projection("EPSG:90013"),map.getProjectionObject()), 5);                    
+                </m:script>
+		</m:map>
+		 <f:view encoding="UTF-8"> 
+		<p:dialog widgetVar="dlg2" id="mpid" header="Dados">	
+			<h:panelGrid id="grid" columns="1" style="margin-bottom:10px">
+			
+			<h:outputLabel style="font-weight:bold;  font-size: 12pt;" for="firstname" value="Proprietario" />
+			<p:separator /> 
+		
+			
+			<h:outputLabel for="lnome" value="Nome *" />
+			<p:inputText id="inome" value="#{propriedadeControl.propriedade.proprietario.nome}" size="50"></p:inputText>				
+				<br/>
+			
+			<h:outputLabel for="lsobrenome" value="Sobrenome *" />
+			<p:inputText id="isobrenome" value="#{propriedadeControl.propriedade.proprietario.sobrenome}" size="50"></p:inputText>				
+				<br/>
+				
+			<h:outputLabel for="lt1" value="Telefone 01 *" />
+			<p:inputText id="it1" value="#{propriedadeControl.propriedade.proprietario.telefone1}" size="50"></p:inputText>				
+				<br/>
+				
+				<h:outputLabel for="lt2" value="Telefone 02 *" />
+			<p:inputText id="it2" value="#{propriedadeControl.propriedade.proprietario.telefone2}" size="50"></p:inputText>				
+				<br/>
+				
+				<h:outputLabel for="lcpf" value="CPF *" />
+			<p:inputText id="icpf" value="#{propriedadeControl.propriedade.proprietario.cpf}" size="50"></p:inputText>				
+				<br/>
+				
+				<h:outputLabel for="lrg" value="RG *" />
+			<p:inputText id="irg" value="#{propriedadeControl.propriedade.proprietario.rg}" size="50"></p:inputText>				
+				<br/>
+			<h:outputLabel for="lbpropriedade" value="Propriedade" style="font-weight:bold;  font-size: 12pt;" />
+			<p:separator /> 
+			
+			<h:outputLabel for="lnpropriedade" value="Nome da Propriedade *" />
+			<p:inputText id="inpropriedade" value="#{propriedadeControl.propriedade.nome}" size="50"></p:inputText>				
+				<br/>
+				
+				<h:outputLabel for="linformacoes" value="Informações: *" />
+				<p:inputTextarea rows="5" cols="50" counter="counter" maxlength="80"
+					counterTemplate="{0} caracteres restantes." autoResize="false"
+					value="#{propriedadeControl.propriedade.informacoes}" />
+					  <p:separator /> 
+					  <f:facet name="footer"> 
+				<p:commandButton styleClass="ui-confirmdialog-yes" title="Salvar" ajax="false"
+					value="Salvar" icon="ui-icon-disk" action="#{propriedadeControl.Salvar}" onclick="dlg2.hide();" actionListener="#{propriedadeControl.save}"/>
+				<p:commandButton styleClass="ui-confirmdialog-yes" title="Cancelar" ajax="false"
+					value="Cancelar" icon="ui-icon-cancel" action="#{propriedadeControl.Limpar}" />
+				</f:facet>
+				<h:outputText id="counter" />
+			</h:panelGrid>			
+		</p:dialog>
+			</f:view>
+		<p:growl id="growl" showDetail="true" />
+		</h:form>
+	</ui:define>
+
+</ui:decorate>
+<SCRIPT type="text/javascript">
+	function abrir() {
+		dlg2.show();
+
+	}
+</SCRIPT>
+</html>

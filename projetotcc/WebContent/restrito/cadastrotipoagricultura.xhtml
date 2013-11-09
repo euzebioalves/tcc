@@ -1,0 +1,44 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" xmlns:m="http://www.ol4jsf.org">
+<ui:decorate template="/template/template_cadastro.xhtml">
+	<ui:define name="corpo">
+		<p:toolbar>
+			<p:toolbarGroup align="left">
+				<p:separator />
+				<p:clock pattern="dd/MM/yyyy HH:mm:ss" mode="client" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Agricultura >" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Cadastro de Tipo de Agricultura" />
+			</p:toolbarGroup>
+		</p:toolbar>
+		<h:form id="f1">
+			<p:panel id="panel" header="Novo Tipo Agricultura"
+				style="margin:20px;">
+				
+				<h:panelGrid columns="4">
+				
+					<h:outputLabel for="descricao" value="Descrição: * " />
+					<p:inputText id="d" value="#{controleTipoAgricultura.tipoAgricultura.descricao}"></p:inputText>
+					
+					<br />
+					<br />
+					<br />
+					<br />
+					<f:facet name="footer">
+					<h:form id="f2">
+					<p:commandButton styleClass="ui-confirmdialog-yes" title="Salvar"
+					value="Salvar" icon="ui-icon-disk" action="#{controleTipoAgricultura.Salvar}" actionListener="#{controleTipoAgricultura.save}" update=":f1"/>
+						<p:growl id="growl" showDetail="true" />
+						</h:form>
+					</f:facet>					
+				</h:panelGrid>
+				
+			</p:panel>
+		</h:form>
+	</ui:define>
+</ui:decorate>
+</html>

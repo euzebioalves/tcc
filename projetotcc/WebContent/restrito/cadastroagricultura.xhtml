@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui" xmlns:m="http://www.ol4jsf.org">
+<ui:decorate template="../template/template_cadastro.xhtml">
+	<ui:define name="corpo">
+		<p:toolbar>
+			<p:toolbarGroup align="left">
+				<p:separator />
+				<p:clock pattern="dd/MM/yyyy HH:mm:ss" mode="client" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Agricultura >" />
+				<p:separator />
+				<h:outputLabel for="surname" value="Cadastro de Agricultura" />
+				<p:separator />
+				<h:form>
+					<br />
+					<p:commandButton styleClass="ui-confirmdialog-yes"
+						title="Escolher Propriedade" value="Escolher Propriedade"
+						icon="ui-icon-search" onclick="dlg3.show();" />
+				</h:form>
+			</p:toolbarGroup>
+		</p:toolbar>
+		<h:form id="f1">
+			<m:map id="mp" width="100%" height="620px" jsVariable="map"
+				options="{controls: [], numZoomLevels: 20, maxResolution: 0.0002734375, maxExtent: bounds}">
+				
+				<m:googleLayer name="Google Hybrid"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.HYBRID}" />
+				
+				<m:googleLayer name="Google Physical"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.TERRAIN }" />
+				
+				<m:googleLayer name="Google Streets"
+					options="{'sphericalMercator': false,  type: google.maps.MapTypeId.ROADMAP}" />
+
+				<m:googleLayer name="Google Satellite"
+					options="{'sphericalMercator': false, type: google.maps.MapTypeId.SATELLITE }" />
+				
+				<m:inputVectorLayer name="Edição" jsVariable="vlayer"
+					value="#{cadastro.polygon}" options="{visibility: true}" />
+
+	
+					
+					<m:inputVectorLayer name="Propriedade" jsVariable="vlayerP"
+					value="#{cadastro.wktsPropriedade}" options="{visibility: true, styleMap: new OpenLayers.StyleMap({strokeWidth: 4, fillColor: '#FFA500', fillOpacity: 0.0, strokeColor: '#ffff00', graphicZIndex: 10}), transparent:true}" />
+					
+					<m:inputVectorLayer name="Agricultura" jsVariable="vlayer2"
+					value="#{cadastro.wkts}" options="{visibility: true, styleMap: new OpenLayers.StyleMap({fillColor: '#54FF9F', fillOpacity: 0.4, strokeColor: '#54FF9F'}),transparent:true}" />
+					
+					<m:inputVectorLayer name="Reserva Obrigaória" jsVariable="vlayer3"
+					value="#{reservaObrigatoriaControl.wkts}" options="{visibility: true, styleMap: new OpenLayers.StyleMap({fillColor: '#1E90FF', fillOpacity: 0.4, strokeColor: '#1E90FF'}),transparent:true}" />
+				
+				<m:navigationControl />
+				<m:panZoomBarControl />
+				<m:layerSwitcherControl options="{ascending:false}" />
+				<m:scaleLineControl />
+				<m:mousePositionControl />
+				<m:overviewMapControl />
+				<m:permalinkControl />
+			
+				<m:script>  
+				var panel = new OpenLayers.Control.Panel({
+                displayClass: "olControlEditingToolbar"
+            	});
+				
+					draw = new OpenLayers.Control.DrawFeature(
+                	vlayer, OpenLayers.Handler.Polygon,
+                	{displayClass: "olControlDrawFeaturePoint", title: "Desenho", handlerOptions: {holeModifier: "altKey"}}
+            	);
+			
+				panel.addControls([
+                new OpenLayers.Control.Navigation({title: "Navegar"}),
+                draw
+            	]);
+            
+            	map.addControl(panel);
+            
+            
+			
+			        var bounds = new OpenLayers.Bounds(-20037508.34, -20037508.34,20037508.34, 20037508.34);                 
+                    var i;
+                    i = 1;
+                    function updateOutput(event) 
+                    {
+                    window.setTimeout(function() 
+                    {
+                    if(event.feature.id != "OpenLayers_Feature_Vector_51")
+                    {
+                    if(i == 1)
+                    {
+                    abrir();
+                    i = 2;
+                    }
+                    }
+                    output.innerHTML = event.type + " " + event.feature.id;
+                    }, 100);
+                    }
+
+					
+                    for(var key in map.layers) 
+                    {
+                    map.layers[key].events.on(
+                    {
+                    sketchmodified: updateOutput,
+                    sketchcomplete: updateOutput
+                    });
+                    } 
+
+                    function toggleControl(element) 
+                    {
+                    draw.activate();
+                    }
+
+                    for (var i=map.layers.length-1; i>=0; --i) 
+                    {
+                    map.layers[i].animationEnabled = true;                       
+                    }         
+                    
+                    
+                    
+                    
+                    
+                    map.setCenter(new OpenLayers.LonLat(-49.260743, -16.676978).transform(new OpenLayers.Projection("EPSG:90013"),map.getProjectionObject()), 5);                    
+                </m:script>
+			</m:map>
+			<f:view encoding="UTF-8">
+				<p:dialog widgetVar="dlg2" id="mpid" header="Dados">
+					<h:panelGrid id="grid" columns="1" style="margin-bottom:10px">
+						<h:outputLabel for="firstname" value="Tipo de Agricultura *" />
+						<p:selectOneMenu
+							value="#{cadastro.agricultura.tipo_agricultura.id_tipo_agricultura}">
+							<f:selectItem itemLabel="Selecione..." itemValue="" />
+							<f:selectItems value="#{cadastro.Listar()}" var="agr"
+								itemLabel="#{agr.descricao}"
+								itemValue="#{agr.id_tipo_agricultura}" />
+						</p:selectOneMenu>
+						<br />
+						<h:outputLabel for="firstname" value="Observações: *" />
+						<p:inputTextarea rows="5" cols="50" counter="counter"
+							maxlength="80" counterTemplate="{0} caracteres restantes."
+							autoResize="false" value="#{cadastro.agricultura.observacoes}" />
+						<p:separator />
+						<f:facet name="footer">
+							<p:commandButton styleClass="ui-confirmdialog-yes" title="Salvar"
+								ajax="false" value="Salvar" icon="ui-icon-disk"
+								action="#{cadastro.Salvar}" onclick="dlg2.hide();"
+								actionListener="#{cadastro.save}" />
+							<p:commandButton styleClass="ui-confirmdialog-yes"
+								title="Cancelar" ajax="false" value="Cancelar"
+								icon="ui-icon-cancel" action="#{cadastro.Limpar}" />
+						</f:facet>
+						<h:outputText id="counter" />
+					</h:panelGrid>
+				</p:dialog>
+			</f:view>
+			<p:growl id="growl" showDetail="true" />
+		</h:form>
+		<p:dialog widgetVar="dlg3" id="mpid" header="Dados">
+			<h:panelGrid id="grid" columns="1" style="margin-bottom:10px">
+				<h:form id="form2">
+					<h:inputHidden id="pol"
+						value="#{propriedadeControl.polygonSelecionado}" />
+
+					<p:dataTable id="agricul"
+						value="#{propriedadeControl.listaPropriedade}" var="prop"
+						width="100%" emptyMessage="Sem registros" widgetVar="carsTable"
+						filteredValue="#{propriedadeControl.listaPropriedade1}">
+
+						<p:column sortBy="#{prop.idPropriedade }">
+							<f:facet name="header">
+								<h:outputText value="ID"></h:outputText>
+							</f:facet>
+							<h:outputText value="#{prop.idPropriedade }"></h:outputText>
+						</p:column>
+						<p:column sortBy="#{prop.nome}">
+							<f:facet name="header">
+								<h:outputText value="Nome da Propriedade"></h:outputText>
+							</f:facet>
+							<h:outputText id="teste3" value="#{prop.nome }"></h:outputText>
+						</p:column>
+						<p:column sortBy="#{prop.proprietario.nome}">
+							<f:facet name="header">
+								<h:outputText value="Nome do Proprietario"></h:outputText>
+							</f:facet>
+							<h:outputText id="teste" value="#{prop.proprietario.nome}"></h:outputText>
+						</p:column>
+						<p:column style="text-align: center">
+							<f:facet name="header">
+								<h:outputText value="Acao"></h:outputText>
+							</f:facet>
+
+							<p:commandButton id="btnExibeDetalhes" update=":form2"
+								image="ui-icon-circle-arrow-n" title="Ir" value="Ir"
+								oncomplete="efetuaAlgumaAcao()">
+								<f:setPropertyActionListener
+									target="#{propriedadeControl.polygonSelecionado}"
+									value="#{prop.polygon}" />
+							</p:commandButton>
+						</p:column>
+					</p:dataTable>
+				</h:form>
+			</h:panelGrid>
+		</p:dialog>
+	</ui:define>	
+</ui:decorate>
+<script type="text/javascript">
+	function abrir() {
+		dlg2.show();
+
+	}
+	function efetuaAlgumaAcao() {
+
+		var o = document.getElementById('form2:pol').value;
+		// alert(o);
+		var geom = OpenLayers.Geometry.fromWKT(o);
+
+		map.zoomToExtent(geom.getBounds());
+		dlg3.hide();
+	}
+</script>
+</html>
